@@ -13,6 +13,9 @@ class TwitterDataHandle:
     
     def getTweet(self, tweetIndex):
         return self.tweetsList[tweetIndex]
+		
+    def getInnerTweetsBy(self, key, innerKey):
+        return map(lambda tweet:tweet.getValueByInnerKey(key, innerKey), self.tweetsList)	
         
     def getTweetsBY(self, key):
         return map(lambda tweet:tweet.getValueByKey(key), self.tweetsList)
@@ -25,8 +28,12 @@ class Tweet:
     
     def getValueByKey(self, key):
         return self.tweet[key]
-        
-    
+		
+    def getValueByInnerKey(self, key, innerKey):
+		if self.tweet[key] != None:
+			return self.tweet[key][innerKey]
+		else:
+			return None
 
 tweetsDataPath = 'twitterSet.txt'
 
@@ -39,9 +46,12 @@ for line in tweetsFile:
     except:
         continue
 
-#print len(tweetsData)
+print len(tweetsData)
 
-print tweetsData[0]['geo']
+#for i in range(1,100):
+	#if tweetsData[i]['geo'] != None:
+	#	print tweetsData[i]['geo']['coordinates']
+	
 twitterHandler = TwitterDataHandle(tweetsData)
 #tweet = twitterHandler.getTweet(0)
 #print tweet.getText().encode('ascii','ignore').decode('ascii')
@@ -51,8 +61,12 @@ twitterHandler = TwitterDataHandle(tweetsData)
 tweets = {'text':[],'lang':[],'place':[]}
 tweets['text'] = twitterHandler.getTweetsBY('text')   
 tweets['lang'] = twitterHandler.getTweetsBY('lang')   
-tweets['place'] = twitterHandler.getTweetsBY("location")   
-#print tweets['place']
+tweets['place'] = twitterHandler.getInnerTweetsBy('geo','coordinates')
+for place in tweets['place']:
+    if place != None:
+        placehandle = open('tweetplace.txt', 'a')
+        placehandle.writelines(str(place[0])+" "+str(place[1]))
+        placehandle.close()
 
 #print tweets
 
