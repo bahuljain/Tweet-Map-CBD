@@ -27,7 +27,9 @@
 			});	
 			
 			socket.on('background thread', function(msg) {
-			    $('#log').append('<br>Received #' + msg.count + ': ' + msg.data);
+				loadUpdateCoordinates(msg.coordinates);
+			    $('#log').append('<br>Received #' + msg.count + ': ' + msg.data + ', ' + msg.size + ', ' + msg.coordinates.length);
+				initMap();
 			});
 			
             // handlers for the different forms in the page
@@ -59,11 +61,19 @@
 			locationArray.push([coordinatesJSON[i].lat,coordinatesJSON[i].lon]);
 			//$('#log').append('<br>Received # ' + locationArray[i][0] + ", " + locationArray[i][1]);
 		}	
-		alert(locationArray.length + " tweets");
+		//alert(locationArray.length + " tweets");
+	}
+	
+	function loadUpdateCoordinates(coordinatesJSON){
+		
+		for(var i = 0; i<coordinatesJSON.length; i++){
+			locationArray.push([coordinatesJSON[i].lat,coordinatesJSON[i].lon]);
+			//$('#log').append('<br>Received # ' + locationArray[i][0] + ", " + locationArray[i][1]);
+		}	
+		//alert(locationArray.length + " tweets");
 	}
 	
 	var map, heatmap;
-	//document.write(myGeocode);
 	function initMap() {
 		//alert('initMap');
 		map = new google.maps.Map(document.getElementById('map'), {
@@ -86,11 +96,10 @@
 		//alert('mapPoints'+ typeof locationArray[500][0]);
 		var mapPoints = [];
 		for(var i = 0; i<locationArray.length; i++){
-			
-			//$('#log').append('<br> Location:' + lat + ', ' + lon);
 			mapPoints.push(new google.maps.LatLng(locationArray[i][0], locationArray[i][1]));
 		}
-		
+		//alert(mapPoints.length);
+		//mapPoints.push(new google.maps.LatLng(-76.977051, -0.547692));
 		return mapPoints;
 	}
 
@@ -119,11 +128,11 @@
 	}
 
 	function changeRadius() {
-	  heatmap.set('radius', heatmap.get('radius') ? null : 20);
+	  heatmap.set('radius', heatmap.get('radius') ? null : 15);
 	}
 
 	function changeOpacity() {
-	  heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+	  heatmap.set('opacity', heatmap.get('opacity') ? null : 1);
 	}
 
 	// Heatmap data: 500 Points
@@ -644,6 +653,7 @@
 	<button onclick="changeRadius()">Change radius</button>
 	<button onclick="toggleHeatmap()">Toggle HeatMap</button>
 	<button onclick="changeGradient()">Change Gradient</button>
+	<button onclick="changeOpacity()">Change Opacity</button>
 	
 	</br>
 	<h4>Filter by Keyword</h4>

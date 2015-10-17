@@ -2,6 +2,13 @@
 
 from pymongo import Connection
 
+def databaseListener(size, collection):
+    newSize = collection.count()
+    if newSize > size + 10:
+        return True;
+    else:
+        return False;
+
 if __name__ == "__main__":
     con = Connection()
     
@@ -17,16 +24,21 @@ if __name__ == "__main__":
 #    tweetsCollection.insert({'id':'1235','text':'Hello :)','location':'India'})
 #    tweetsCollection.insert({'id':'1236','text':'Hello :(','location':'UK'})
     
-    tweets = tweetsCollection.find()
+    
     size = tweetsCollection.count()
     print 'FIND'
     print 'Number of Rows ' + `size`
-    count = 0;
-    for tweet in tweets:
-        if len(tweet['category'])==0:
-            count = count +1
-            print tweet['text']
-    print count
+#    tweets = tweetsCollection.find().skip(10000)
+    
+#    count = 0;
+#    for tweet in tweets:
+#        
+##        if len(tweet['category'])==0:
+#        count = count +1
+#    print count
+#        print `count` + ': ' + `tweet['coordinates'][1]` + ', ' + `tweet['coordinates'][0]`
+#            print tweet['text']
+    #print count
 #    coordinates = []
 #    for tweet in tweets:
 ##            print tweet['text']

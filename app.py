@@ -19,14 +19,50 @@ thread = None
 def background_thread():
     """Example of how to send server generated events to clients."""
     count = 0
-       
+    size = databaseSize()
     while True:
-        time.sleep(5)
-        count += 1
-        socketio.emit('background thread',
-                      {'data': 'backgroundThread', 'count': count},
-                      namespace='/test')
-                          
+        time.sleep(20)
+        
+        if databaseListener(size):
+            coordinates = fetchRecentRecords(size)
+            size = databaseSize()            
+            count += 1
+            socketio.emit('background thread',
+                          {'data': 'True', 'coordinates':coordinates,'count': count, 'size':size},
+                          namespace='/test')
+#        else:
+#            count += 1
+#            socketio.emit('background thread',
+#                          {'data': 'False', 'count': count, 'size':size},
+#                          namespace='/test')
+           
+def fetchRecentRecords(size):
+    con = Connection()   
+    db = con.twitterDatabase_test
+    tweetsCollection = db.tweetsCollection_test           
+    tweets = tweetsCollection.find().skip(size)
+    coordinates = []
+    for tweet in tweets:
+        coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})
+    return coordinates   
+
+def databaseListener(size):
+    con = Connection()   
+    db = con.twitterDatabase_test
+    tweetsCollection = db.tweetsCollection_test
+        
+    newSize = tweetsCollection.count()
+    if newSize > size + 5:
+        return True;
+    else:
+        return False;
+       
+def databaseSize():
+    con = Connection()   
+    db = con.twitterDatabase_test
+    tweetsCollection = db.tweetsCollection_test
+    return tweetsCollection.count()
+            
 def sendCoordinatesFromDB():
     con = Connection()   
     db = con.twitterDatabase_test

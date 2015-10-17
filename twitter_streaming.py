@@ -21,7 +21,7 @@ def findCategory(text, keywordList):
             category.append(keyword)    
     return category        
 
-#This is a basic listener that just prints received tweets to stdout.
+#This is a basic listener that just stores received tweets to database.
 class StdOutListener(StreamListener):
 
     def __init__(self):
