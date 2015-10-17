@@ -87,6 +87,7 @@
 	function initHeatMap(){
 		//alert('initHeatMap');
 		heatmap = new google.maps.visualization.HeatmapLayer({
+			opacity: 1,
 			data: getMapPoints(),//[new google.maps.LatLng(-37.782551, -122.445368)],
 			map: map
 		});
@@ -660,8 +661,9 @@
 	
 	<form id="filter" method="POST" action='#'>
         <select id='keywords' name='keywords'>
+			<option value='all'>All</option>
 			<option value='movies'>Movies</option>
-			<option value='music' selected='selected'>Music</option>
+			<option value='music'>Music</option>
 			<option value='sports'>Sports</option>
 			<option value='finance'>Finance</option>
 			<option value='technology'>Technology</option>

@@ -15,6 +15,8 @@ socketio = SocketIO(app)
 app.debug = True
 app.config['SECRET_KEY'] = 'secret!'
 thread = None
+global keyword
+keyword = ''
 
 def background_thread():
     """Example of how to send server generated events to clients."""
@@ -36,14 +38,26 @@ def background_thread():
 #                          {'data': 'False', 'count': count, 'size':size},
 #                          namespace='/test')
            
+def setKeyword(key):
+    global keyword   
+    if(key.lower()=='all'):
+        keyword = ''
+    else:
+        keyword = key.lower()
+           
 def fetchRecentRecords(size):
     con = Connection()   
     db = con.twitterDatabase_test
     tweetsCollection = db.tweetsCollection_test           
     tweets = tweetsCollection.find().skip(size)
     coordinates = []
-    for tweet in tweets:
-        coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})
+    if keyword == '':
+        for tweet in tweets:
+            coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})                    
+    else:
+        for tweet in tweets:
+            if keyword.lower() in tweet['category']:
+                coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})
     return coordinates   
 
 def databaseListener(size):
@@ -74,15 +88,19 @@ def sendCoordinatesFromDB():
     
     return coordinates    
 
-def filterCoordinatesFromDB(keyword):
+def filterCoordinatesFromDB():
     con = Connection()   
     db = con.twitterDatabase_test
     tweetsCollection = db.tweetsCollection_test
     tweets = tweetsCollection.find()
     coordinates = []
-    for tweet in tweets:
-        if keyword.lower() in tweet['category']:
-            coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})
+    if keyword == '':
+        for tweet in tweets:
+            coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})                    
+    else:
+        for tweet in tweets:
+            if keyword in tweet['category']:
+                coordinates.append({'lat':tweet['coordinates'][1],'lon':tweet['coordinates'][0]})
     return coordinates    
 
 
@@ -103,7 +121,8 @@ def load_coordinates(message):
 
 @socketio.on('filter event', namespace='/test')
 def filter_coordinates(message):
-    coordinates = filterCoordinatesFromDB(message['data'])        
+    setKeyword(message['data'])
+    coordinates = filterCoordinatesFromDB()        
     emit('filtered coordinates',
          {'coordinates':coordinates})
 
