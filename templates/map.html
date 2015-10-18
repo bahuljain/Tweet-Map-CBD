@@ -6,6 +6,7 @@
 
 	<script> 
 	var locationArray = [];
+	
 	var count = 0;
 	$(document).ready(function(){
             namespace = '/test'; // change to an empty string to use the global namespace
@@ -27,9 +28,8 @@
 			});	
 			
 			socket.on('background thread', function(msg) {
-				loadUpdateCoordinates(msg.coordinates);
-			    $('#log').append('<br>Received #' + msg.count + ': ' + msg.data + ', ' + msg.size + ', ' + msg.coordinates.length);
-				initMap();
+				$('#log').append('<br>Received #' + msg.count + ': ' + msg.data + ', ' + msg.size + ', ' + msg.coordinates.length);
+				updateMapPoints(msg.coordinates);
 			});
 			
             // handlers for the different forms in the page
@@ -42,8 +42,7 @@
 			socket.on('filtered coordinates', function(msg) {
 				loadCoordinates(msg.coordinates);
 				$('#log').append('<br>Received # Filtered Coordinates');
-				initMap();
-				//$.getScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyAfMLYu1gElfllMWvdtEEVKf8KFC67zTF0&signed_in=true&libraries=visualization&callback=initMap");
+				loadFilteredMapPoints();
 			});
             
 			$('form#disconnect').submit(function(event) {
@@ -56,21 +55,27 @@
 	
 	function loadCoordinates(coordinatesJSON){
 		locationArray = [];
-		
 		for(var i = 0; i<coordinatesJSON.length; i++){
 			locationArray.push([coordinatesJSON[i].lat,coordinatesJSON[i].lon]);
-			//$('#log').append('<br>Received # ' + locationArray[i][0] + ", " + locationArray[i][1]);
 		}	
-		//alert(locationArray.length + " tweets");
 	}
 	
-	function loadUpdateCoordinates(coordinatesJSON){
+	function loadFilteredMapPoints(){
+		while(mapPoints.length>0){
+			mapPoints.pop();
+		}
 		
+		for(var i = 0; i<locationArray.length; i++){
+			mapPoints.push(new google.maps.LatLng(locationArray[i][0], locationArray[i][1]));
+		}
+		
+	}
+		
+	var mapPoints;
+	function updateMapPoints(coordinatesJSON){
 		for(var i = 0; i<coordinatesJSON.length; i++){
-			locationArray.push([coordinatesJSON[i].lat,coordinatesJSON[i].lon]);
-			//$('#log').append('<br>Received # ' + locationArray[i][0] + ", " + locationArray[i][1]);
+			mapPoints.push(new google.maps.LatLng(coordinatesJSON[i].lat, coordinatesJSON[i].lon));
 		}	
-		//alert(locationArray.length + " tweets");
 	}
 	
 	var map, heatmap;
@@ -86,22 +91,23 @@
 	
 	function initHeatMap(){
 		//alert('initHeatMap');
+		
+		getMapPoints();
+		
 		heatmap = new google.maps.visualization.HeatmapLayer({
 			opacity: 1,
-			data: getMapPoints(),//[new google.maps.LatLng(-37.782551, -122.445368)],
+			data: mapPoints,
 			map: map
 		});
 	}
 	
+	
 	function getMapPoints(){
-		//alert('mapPoints'+ typeof locationArray[500][0]);
-		var mapPoints = [];
+		temp = [];
 		for(var i = 0; i<locationArray.length; i++){
-			mapPoints.push(new google.maps.LatLng(locationArray[i][0], locationArray[i][1]));
+			temp.push(new google.maps.LatLng(locationArray[i][0], locationArray[i][1]));
 		}
-		//alert(mapPoints.length);
-		//mapPoints.push(new google.maps.LatLng(-76.977051, -0.547692));
-		return mapPoints;
+		mapPoints = new google.maps.MVCArray(temp);
 	}
 
 	function toggleHeatmap() {
